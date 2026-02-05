@@ -1,0 +1,47 @@
+swagger: "2.0"
+info:
+  description: "Platform Wallet Point Gamifikasi Kampus - Backend API"
+  title: "Wallet Point API"
+  termsOfService: "http://swagger.io/terms/"
+  contact:
+    name: "API Support"
+    email: "support@campus.edu"
+  license:
+    name: "MIT"
+    url: "https://opensource.org/licenses/MIT"
+  version: "1.0"
+host: "walletpoint.xeroon.my.id"
+basePath: "/api/v1"
+schemes:
+  - "https"
+paths:
+  /health:
+    get:
+      tags:
+        - "Health"
+      summary: "Health check"
+      description: "Check if API is running"
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "OK"
+  /auth/login:
+    post:
+      tags:
+        - "Authentication"
+      summary: "Login user"
+      description: "Authenticate user and return JWT token"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "OK"
+securityDefinitions:
+  BearerAuth:
+    type: "apiKey"
+    name: "Authorization"
+    in: "header"
+    description: "Type 'Bearer' followed by a space and JWT token."
