@@ -9,7 +9,7 @@
             "email": "support@campus.edu"
         }
     },
-    "host": "localhost:8102",
+    "host": "walletpoint.xeroon.my.id",
     "basePath": "/api/v1",
     "schemes": [
         "http"
