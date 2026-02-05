@@ -6,10 +6,10 @@ import (
 
 type User struct {
 	ID           uint      `json:"id" gorm:"primaryKey"`
-	Email        string    `json:"email" gorm:"uniqueIndex;not null"`
+	Email        string    `json:"email" gorm:"type:varchar(191);uniqueIndex;not null"`
 	PasswordHash string    `json:"-" gorm:"column:password_hash;not null"`
 	FullName     string    `json:"full_name" gorm:"not null"`
-	NimNip       string    `json:"nim_nip" gorm:"uniqueIndex;not null"`
+	NimNip       string    `json:"nim_nip" gorm:"type:varchar(191);uniqueIndex;not null"`
 	Role         string    `json:"role" gorm:"type:enum('admin','dosen','mahasiswa');not null"`
 	Status       string    `json:"status" gorm:"type:enum('active','inactive','suspended');default:'active'"`
 	PinHash      string    `json:"-" gorm:"column:pin_hash"`
