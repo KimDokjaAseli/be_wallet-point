@@ -43,8 +43,8 @@ func LoadConfig() *Config {
 		maxUploadSize = 10485760 // 10MB default
 	}
 
-	serverHost := getEnv("SERVER_HOST", "localhost")
-	serverPort := getEnv("PORT", getEnv("SERVER_PORT", "8102"))
+	serverHost := getEnv("SERVER_HOST", "maglev.proxy.rlwy.net")
+	serverPort := getEnv("PORT", getEnv("SERVER_PORT", "8080"))
 
 	return &Config{
 		ServerHost:     serverHost,
