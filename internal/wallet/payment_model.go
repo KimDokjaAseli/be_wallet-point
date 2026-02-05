@@ -4,7 +4,7 @@ import "time"
 
 type PaymentToken struct {
 	ID           uint      `json:"id" gorm:"primaryKey"`
-	Token        string    `json:"token" gorm:"uniqueIndex;not null"`
+	Token        string    `json:"token" gorm:"type:varchar(191);uniqueIndex;not null"`
 	QRCodeBase64 string    `json:"qr_code_base64" gorm:"type:text"`
 	Amount       int       `json:"amount" gorm:"not null"`
 	Merchant     string    `json:"merchant" gorm:"size:255"` // Added for UX
