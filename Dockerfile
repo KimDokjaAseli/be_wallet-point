@@ -37,4 +37,4 @@ RUN mkdir -p uploads
 EXPOSE 8080
 
 # Command to run the executable
-CMD ["./server"]
+CMD ["./main.go"]
