@@ -17,7 +17,7 @@ COPY . .
 
 # Build the application
 # CGO_ENABLED=0 creates a statically linked binary
-RUN CGO_ENABLED=0 GOOS=linux go build -o server ./cmd/server/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -o server ./main.go
 
 # Final stage
 FROM alpine:latest
