@@ -53,7 +53,8 @@ func main() {
 	routes.SetupRoutes(r, db, cfg.AllowedOrigins, cfg.JWTExpiryHours)
 
 	// Start server
-	serverAddress := ":" + cfg.ServerPort
+	serverAddress := cfg.ServerAddress
+
 	log.Printf("🚀 Server starting on http://%s", cfg.ServerAddress)
 	log.Printf("📚 API Documentation (if Swagger enabled): http://%s/swagger/index.html", cfg.ServerAddress)
 	log.Printf("🏥 Health Check: http://%s/api/v1/health", cfg.ServerAddress)
@@ -62,4 +63,5 @@ func main() {
 	if err := r.Run(serverAddress); err != nil {
 		log.Fatal("❌ Failed to start server:", err)
 	}
+
 }

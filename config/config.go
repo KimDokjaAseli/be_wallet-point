@@ -43,7 +43,7 @@ func LoadConfig() *Config {
 		maxUploadSize = 10485760 // 10MB default
 	}
 
-	serverHost := getEnv("SERVER_HOST", "maglev.proxy.rlwy.net")
+	serverHost := getEnv("SERVER_HOST", "0.0.0.0")
 	serverPort := getEnv("PORT", getEnv("SERVER_PORT", "8080"))
 
 	return &Config{
@@ -56,13 +56,12 @@ func LoadConfig() *Config {
 		DBUser:         getEnv("DB_USER", "root"),
 		DBPassword:     getEnv("DB_PASSWORD", "rgkMnrENbVTZwmfoaFqHVXFoJXqRrRTW"),
 		DBName:         getEnv("DB_NAME", "railway"),
-		JWTSecret:      getEnv("JWT_SECRET", "H6RoFvCDVvlXU33SXXsi2anbRF/mafbH9O1+QWoulOULji6n8xtgiVXeorrSJTwr83LDVVX8wxYexICnyCyjpg=="),
+		JWTSecret:      getEnv("JWT_SECRET", "H6RoFvCDVvlXU33SXXsi2anbRF/mafbH9O1+QWoulji6n8xtgiVXeorrSJTwr83LDVVX8wxYexICnyCyjpg=="),
 		JWTExpiryHours: jwtExpiry,
 		AllowedOrigins: getEnv("ALLOWED_ORIGINS", "*"),
 		MaxUploadSize:  maxUploadSize,
 		UploadPath:     getEnv("UPLOAD_PATH", "./uploads"),
 	}
-}
 
 func getEnv(key, defaultValue string) string {
 	value := os.Getenv(key)
