@@ -21,14 +21,15 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-func SetupRoutes(r *gin.Engine, db *gorm.DB, allowedOrigins string, jwtExpiry int) {
+func SetupRoutes(r *gin.Engine, db *gorm.DB, allowedOrigins string, jwtExpiry int, uploadPath string) {
 	// Apply global middleware
 	r.Use(middleware.CORS(allowedOrigins))
 	r.Use(middleware.Logger())
 	r.Use(middleware.SecurityHeaders())
 	r.Use(middleware.IPBasedRateLimiter())
 
-	r.Static("/uploads", "../../public/uploads")
+	// Use config-driven upload path for stability
+	r.Static("/uploads", uploadPath)
 
 	// Root Route
 	r.GET("/", func(c *gin.Context) {

@@ -50,7 +50,7 @@ func main() {
 	r := gin.Default()
 
 	// Setup routes
-	routes.SetupRoutes(r, db, cfg.AllowedOrigins, cfg.JWTExpiryHours)
+	routes.SetupRoutes(r, db, cfg.AllowedOrigins, cfg.JWTExpiryHours, cfg.UploadPath)
 
 	// Start server
 	serverAddress := cfg.ServerAddress

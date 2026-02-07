@@ -281,13 +281,13 @@ func (s *MarketplaceService) Checkout(userID uint, req CartCheckoutRequest) erro
 
 	// 5. Execute Transaction
 	return s.db.Transaction(func(tx *gorm.DB) error {
-		for _, item := range items {
-			// Debit wallet for each item
-			desc := fmt.Sprintf("Purchase: %dx %s", item.Quantity, item.Product.Name)
-			if err := s.walletService.DebitWithTransaction(tx, wallet.ID, item.Product.Price*item.Quantity, "marketplace", desc); err != nil {
-				return err
-			}
+		// Single wallet debit for the entire checkout
+		checkoutDesc := fmt.Sprintf("Checkout: %d item(s)", len(items))
+		if err := s.walletService.DebitWithTransaction(tx, wallet.ID, totalPrice, "marketplace", checkoutDesc); err != nil {
+			return err
+		}
 
+		for _, item := range items {
 			// Reduce stock
 			if err := s.repo.UpdateStock(tx, item.ProductID, -item.Quantity); err != nil {
 				return err

@@ -132,6 +132,10 @@ func (s *AuthService) GetUserByID(userID uint) (*User, error) {
 
 // UpdateProfile updates basic user information
 func (s *AuthService) UpdateProfile(userID uint, req *UpdateProfileRequest) (*User, error) {
+	if req.FullName == "" {
+		return nil, errors.New("full name cannot be empty")
+	}
+
 	updates := map[string]interface{}{
 		"full_name": req.FullName,
 	}
