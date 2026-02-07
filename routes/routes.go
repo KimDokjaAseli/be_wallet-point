@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"wallet-point/config"
 	"wallet-point/internal/audit"
 	"wallet-point/internal/auth"
 	"wallet-point/internal/marketplace"
@@ -22,14 +21,14 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-func SetupRoutes(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
+func SetupRoutes(r *gin.Engine, db *gorm.DB, allowedOrigins string, jwtExpiry int) {
 	// Apply global middleware
-	r.Use(middleware.CORS(cfg.AllowedOrigins))
+	r.Use(middleware.CORS(allowedOrigins))
 	r.Use(middleware.Logger())
 	r.Use(middleware.SecurityHeaders())
 	r.Use(middleware.IPBasedRateLimiter())
 
-	r.Static("/uploads", cfg.UploadPath)
+	r.Static("/uploads", "../../public/uploads")
 
 	// Root Route
 	r.GET("/", func(c *gin.Context) {
@@ -54,7 +53,7 @@ func SetupRoutes(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
 	missionRepo := mission.NewMissionRepository(db)
 
 	// Initialize services
-	authService := auth.NewAuthService(authRepo, cfg.JWTExpiryHours)
+	authService := auth.NewAuthService(authRepo, jwtExpiry)
 	userService := user.NewUserService(userRepo)
 	walletService := wallet.NewWalletService(walletRepo, db)
 	walletService.SetAuthService(authService) // Inject for PIN verification

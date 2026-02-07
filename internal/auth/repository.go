@@ -2,7 +2,6 @@ package auth
 
 import (
 	"errors"
-	"time"
 
 	"gorm.io/gorm"
 )
@@ -44,29 +43,6 @@ func (r *AuthRepository) FindByID(userID uint) (*User, error) {
 // Create creates a new user
 func (r *AuthRepository) Create(user *User) error {
 	return r.db.Create(user).Error
-}
-
-// CreateWithWallet creates a new user and their wallet in a transaction
-func (r *AuthRepository) CreateWithWallet(user *User) error {
-	return r.db.Transaction(func(tx *gorm.DB) error {
-		if err := tx.Create(user).Error; err != nil {
-			return err
-		}
-
-		// Create wallet manually to avoid circular dependency
-		wallet := map[string]interface{}{
-			"user_id":    user.ID,
-			"balance":    0,
-			"created_at": time.Now(),
-			"updated_at": time.Now(),
-		}
-
-		if err := tx.Table("wallets").Create(&wallet).Error; err != nil {
-			return err
-		}
-
-		return nil
-	})
 }
 
 // CheckEmailExists checks if email already exists

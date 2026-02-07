@@ -21,7 +21,7 @@ import (
 // @license.name MIT
 // @license.url https://opensource.org/licenses/MIT
 
-// @host localhost:8080
+// @host bewallet-point-production.up.railway.app
 // @schemes https
 // @BasePath /api/v1
 
@@ -50,7 +50,7 @@ func main() {
 	r := gin.Default()
 
 	// Setup routes
-	routes.SetupRoutes(r, db, cfg)
+	routes.SetupRoutes(r, db, cfg.AllowedOrigins, cfg.JWTExpiryHours)
 
 	// Start server
 	serverAddress := cfg.ServerAddress

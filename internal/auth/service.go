@@ -6,16 +6,6 @@ import (
 	"wallet-point/utils"
 )
 
-var (
-	ErrUserNotFound    = errors.New("user not found")
-	ErrEmailExists     = errors.New("email already registered")
-	ErrNimNipExists    = errors.New("NIM/NIP already registered")
-	ErrInvalidPassword = errors.New("invalid password")
-	ErrInactiveAccount = errors.New("account is inactive or suspended")
-)
-
-const DefaultStudentPIN = "123456"
-
 type AuthService struct {
 	repo      *AuthRepository
 	jwtExpiry int
@@ -38,7 +28,7 @@ func (s *AuthService) Login(email, password string) (*LoginResponse, error) {
 
 	// Check if user is active
 	if user.Status != "active" {
-		return nil, ErrInactiveAccount
+		return nil, errors.New("account is inactive or suspended")
 	}
 
 	// Verify password
@@ -89,7 +79,7 @@ func (s *AuthService) createUser(email, password, fullName, nimNip, role string)
 		return nil, err
 	}
 	if exists {
-		return nil, ErrEmailExists
+		return nil, errors.New("email already registered")
 	}
 
 	// Check if NIM/NIP already exists
@@ -98,7 +88,7 @@ func (s *AuthService) createUser(email, password, fullName, nimNip, role string)
 		return nil, err
 	}
 	if exists {
-		return nil, ErrNimNipExists
+		return nil, errors.New("NIM/NIP already registered")
 	}
 
 	// Hash password
@@ -110,7 +100,7 @@ func (s *AuthService) createUser(email, password, fullName, nimNip, role string)
 	// Default PIN for mahasiswa
 	var pinHash string
 	if role == "mahasiswa" {
-		hashedPin, err := utils.HashPassword(DefaultStudentPIN)
+		hashedPin, err := utils.HashPassword("123456")
 		if err != nil {
 			return nil, errors.New("failed to set default PIN")
 		}
@@ -128,8 +118,8 @@ func (s *AuthService) createUser(email, password, fullName, nimNip, role string)
 		PinHash:      pinHash, // Set default PIN here
 	}
 
-	if err := s.repo.CreateWithWallet(user); err != nil {
-		return nil, errors.New("failed to create user and wallet: " + err.Error())
+	if err := s.repo.Create(user); err != nil {
+		return nil, errors.New("failed to create user")
 	}
 
 	return user, nil
@@ -217,10 +207,10 @@ func (s *AuthService) VerifyPIN(userID uint, pin string) error {
 	// If PIN is not set, allow default PIN for mahasiswa
 	if user.PinHash == "" {
 		if user.Role == "mahasiswa" {
-			if pin == DefaultStudentPIN {
+			if pin == "123456" {
 				return nil
 			}
-			return errors.New("invalid PIN. Default PIN is " + DefaultStudentPIN)
+			return errors.New("invalid PIN. Default PIN is 123456")
 		}
 		return errors.New("transaction PIN has not been set. Please set your PIN in Security settings first.")
 	}
