@@ -1,0 +1,23 @@
+basePath: /api/v1
+host: walletpoint.xeroon.my.id
+info:
+  contact:
+    email: support@campus.edu
+    name: API Support
+  description: Platform Wallet Point Gamifikasi Kampus - Backend API
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: Wallet Point API
+  version: "1.0"
+paths: {}
+schemes:
+- https
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
