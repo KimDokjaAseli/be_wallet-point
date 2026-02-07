@@ -22,17 +22,18 @@ func (jo *JSONOptions) Scan(value interface{}) error {
 }
 
 type Mission struct {
-	ID          uint              `json:"id" gorm:"primaryKey"`
-	CreatorID   uint              `json:"creator_id" gorm:"column:creator_id;not null"`
-	Title       string            `json:"title" gorm:"not null"`
-	Description string            `json:"description" gorm:"type:text"`
-	Type        string            `json:"type" gorm:"type:enum('quiz','task','assignment');not null"`
-	Points      int               `json:"points" gorm:"column:points_reward;not null"`
-	Deadline    *time.Time        `json:"deadline" gorm:"column:deadline"`
-	Status      string            `json:"status" gorm:"type:enum('active','inactive','expired');default:'active'"`
-	Questions   []MissionQuestion `json:"questions,omitempty" gorm:"foreignKey:MissionID;constraint:OnDelete:CASCADE"`
-	CreatedAt   time.Time         `json:"created_at"`
-	UpdatedAt   time.Time         `json:"updated_at"`
+	ID           uint              `json:"id" gorm:"primaryKey"`
+	CreatorID    uint              `json:"creator_id" gorm:"column:creator_id;not null"`
+	Title        string            `json:"title" gorm:"not null"`
+	Description  string            `json:"description" gorm:"type:text"`
+	Type         string            `json:"type" gorm:"type:enum('quiz','task','assignment');not null"`
+	Points       int               `json:"points" gorm:"column:points_reward;not null"`
+	MinimumScore int               `json:"minimum_score" gorm:"column:minimum_score;default:0"`
+	Deadline     *time.Time        `json:"deadline" gorm:"column:deadline"`
+	Status       string            `json:"status" gorm:"type:enum('active','inactive','expired');default:'active'"`
+	Questions    []MissionQuestion `json:"questions,omitempty" gorm:"foreignKey:MissionID;constraint:OnDelete:CASCADE"`
+	CreatedAt    time.Time         `json:"created_at"`
+	UpdatedAt    time.Time         `json:"updated_at"`
 }
 
 type MissionQuestion struct {
@@ -72,12 +73,13 @@ func (MissionSubmission) TableName() string {
 }
 
 type CreateMissionRequest struct {
-	Title       string            `json:"title" binding:"required"`
-	Description string            `json:"description"`
-	Type        string            `json:"type" binding:"required,oneof=quiz task assignment"`
-	Points      int               `json:"points" binding:"required,gt=0"`
-	Deadline    *time.Time        `json:"deadline"`
-	Questions   []QuestionRequest `json:"questions"`
+	Title        string            `json:"title" binding:"required"`
+	Description  string            `json:"description"`
+	Type         string            `json:"type" binding:"required,oneof=quiz task assignment"`
+	Points       int               `json:"points" binding:"required,gt=0"`
+	MinimumScore int               `json:"minimum_score" binding:"gte=0"`
+	Deadline     *time.Time        `json:"deadline"`
+	Questions    []QuestionRequest `json:"questions"`
 }
 
 type QuestionRequest struct {
@@ -87,12 +89,13 @@ type QuestionRequest struct {
 }
 
 type UpdateMissionRequest struct {
-	Title       string            `json:"title,omitempty"`
-	Description string            `json:"description,omitempty"`
-	Points      int               `json:"points,omitempty" binding:"omitempty,gt=0"`
-	Deadline    *time.Time        `json:"deadline,omitempty"`
-	Status      string            `json:"status,omitempty" binding:"omitempty,oneof=active inactive expired"`
-	Questions   []QuestionRequest `json:"questions,omitempty"`
+	Title        string            `json:"title,omitempty"`
+	Description  string            `json:"description,omitempty"`
+	Points       int               `json:"points,omitempty" binding:"omitempty,gt=0"`
+	MinimumScore int               `json:"minimum_score,omitempty" binding:"omitempty,gte=0"`
+	Deadline     *time.Time        `json:"deadline,omitempty"`
+	Status       string            `json:"status,omitempty" binding:"omitempty,oneof=active inactive expired"`
+	Questions    []QuestionRequest `json:"questions,omitempty"`
 }
 
 type SubmitMissionRequest struct {

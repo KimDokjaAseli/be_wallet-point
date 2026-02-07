@@ -6,6 +6,7 @@ import (
 	"wallet-point/internal/auth"
 	"wallet-point/internal/marketplace"
 	"wallet-point/internal/mission"
+	"wallet-point/internal/transfer"
 	"wallet-point/internal/wallet"
 
 	"gorm.io/gorm"
@@ -30,6 +31,7 @@ func Migrate(db *gorm.DB) {
 		&mission.Mission{},
 		&mission.MissionQuestion{},
 		&mission.MissionSubmission{},
+		&transfer.Transfer{},
 	)
 
 	if err != nil {

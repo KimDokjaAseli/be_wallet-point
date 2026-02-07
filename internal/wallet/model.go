@@ -46,6 +46,7 @@ type WalletWithUser struct {
 type TransactionWithDetails struct {
 	ID          uint      `json:"id"`
 	WalletID    uint      `json:"wallet_id"`
+	UserID      uint      `json:"user_id"`
 	UserEmail   string    `json:"user_email"`
 	UserName    string    `json:"user_name"`
 	NimNip      string    `json:"nim_nip"`

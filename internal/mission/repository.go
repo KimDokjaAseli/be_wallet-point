@@ -133,8 +133,9 @@ func (r *MissionRepository) UpdateSubmissionWithTx(tx *gorm.DB, id uint, updates
 
 func (r *MissionRepository) CheckDuplicateSubmission(missionID, studentID uint) (bool, error) {
 	var count int64
+	// Allow resubmission if all previous ones were rejected
 	err := r.db.Model(&MissionSubmission{}).
-		Where("mission_id = ? AND student_id = ?", missionID, studentID).
+		Where("mission_id = ? AND student_id = ? AND status != ?", missionID, studentID, "rejected").
 		Count(&count).Error
 	return count > 0, err
 }

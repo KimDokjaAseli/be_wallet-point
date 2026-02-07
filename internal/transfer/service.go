@@ -60,6 +60,18 @@ func (s *Service) CreateTransfer(senderUserID, receiverUserID uint, amount int, 
 			return err
 		}
 
+		// 3. Record in Transfers table
+		transferRecord := &Transfer{
+			SenderID:    senderUserID,
+			ReceiverID:  receiverUserID,
+			Amount:      amount,
+			Description: description,
+			Status:      "success",
+		}
+		if err := tx.Create(transferRecord).Error; err != nil {
+			return err
+		}
+
 		return nil
 	})
 
@@ -67,12 +79,12 @@ func (s *Service) CreateTransfer(senderUserID, receiverUserID uint, amount int, 
 		return nil, err
 	}
 
-	// Return a virtual TransferInfo for the response
 	return &TransferInfo{
-		SenderWalletID:   senderWallet.ID,
-		ReceiverWalletID: receiverWallet.ID,
-		Amount:           amount,
-		Description:      description,
+		SenderID:    senderUserID,
+		ReceiverID:  receiverUserID,
+		Amount:      amount,
+		Description: description,
+		Status:      "success",
 	}, nil
 }
 
@@ -141,14 +153,14 @@ func (s *Service) GetAllTransfers(limit, page int) ([]TransferInfo, int64, error
 	var transfers []TransferInfo
 	for _, t := range txns {
 		transfers = append(transfers, TransferInfo{
-			ID:               t.ID,
-			SenderWalletID:   t.WalletID,
-			ReceiverWalletID: 0,
-			Amount:           t.Amount,
-			Description:      t.Description,
-			CreatedAt:        t.CreatedAt,
-			SenderName:       t.UserName,
-			SenderNIM:        t.NimNip,
+			ID:          t.ID,
+			SenderID:    t.UserID,
+			Amount:      t.Amount,
+			Description: t.Description,
+			CreatedAt:   t.CreatedAt,
+			SenderName:  t.UserName,
+			SenderNIM:   t.NimNip,
+			Status:      "success",
 		})
 	}
 

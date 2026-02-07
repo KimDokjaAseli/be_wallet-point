@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"time"
 	"wallet-point/internal/auth"
 	"wallet-point/internal/wallet"
 
@@ -229,7 +230,9 @@ func (s *MarketplaceService) GetCart(userID uint) (*CartResponse, error) {
 
 	totalPrice := 0
 	for _, item := range items {
-		totalPrice += item.Product.Price * item.Quantity
+		if item.Product != nil {
+			totalPrice += item.Product.Price * item.Quantity
+		}
 	}
 
 	return &CartResponse{
@@ -264,6 +267,9 @@ func (s *MarketplaceService) Checkout(userID uint, req CartCheckoutRequest) erro
 	// 3. Calculate total and check stock
 	totalPrice := 0
 	for _, item := range items {
+		if item.Product == nil {
+			return fmt.Errorf("produk dengan ID %d tidak ditemukan", item.ProductID)
+		}
 		if item.Product.Stock < item.Quantity {
 			return fmt.Errorf("stok produk '%s' tidak mencukupi", item.Product.Name)
 		}
@@ -282,6 +288,7 @@ func (s *MarketplaceService) Checkout(userID uint, req CartCheckoutRequest) erro
 	// 5. Execute Transaction
 	return s.db.Transaction(func(tx *gorm.DB) error {
 		// Single wallet debit for the entire checkout
+		checkoutID := fmt.Sprintf("CK-%d-%d", userID, time.Now().Unix())
 		checkoutDesc := fmt.Sprintf("Checkout: %d item(s)", len(items))
 		if err := s.walletService.DebitWithTransaction(tx, wallet.ID, totalPrice, "marketplace", checkoutDesc); err != nil {
 			return err
@@ -294,11 +301,17 @@ func (s *MarketplaceService) Checkout(userID uint, req CartCheckoutRequest) erro
 			}
 
 			// Record in Marketplace Transactions
+			amount := 0
+			if item.Product != nil {
+				amount = item.Product.Price
+			}
+
 			txn := &MarketplaceTransaction{
+				CheckoutID:    checkoutID,
 				WalletID:      wallet.ID,
 				ProductID:     item.ProductID,
-				Amount:        item.Product.Price,
-				TotalAmount:   item.Product.Price * item.Quantity,
+				Amount:        amount,
+				TotalAmount:   amount * item.Quantity,
 				Quantity:      item.Quantity,
 				PaymentMethod: "wallet",
 				Status:        "success",

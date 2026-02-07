@@ -23,6 +23,7 @@ func (Product) TableName() string {
 
 type MarketplaceTransaction struct {
 	ID            uint      `json:"id" gorm:"primaryKey"`
+	CheckoutID    string    `json:"checkout_id" gorm:"size:50;index"`
 	WalletID      uint      `json:"wallet_id" gorm:"not null;index"`
 	ProductID     uint      `json:"product_id" gorm:"not null;index"`
 	Amount        int       `json:"amount" gorm:"not null"`                           // Individual item price
@@ -108,7 +109,7 @@ type CartItem struct {
 	UserID    uint      `json:"user_id" gorm:"not null;index"`
 	ProductID uint      `json:"product_id" gorm:"not null;index"`
 	Quantity  int       `json:"quantity" gorm:"not null;default:1"`
-	Product   Product   `json:"product" gorm:"foreignKey:ProductID"`
+	Product   *Product  `json:"product" gorm:"foreignKey:ProductID;references:ID"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }

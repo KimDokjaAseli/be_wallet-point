@@ -70,7 +70,7 @@ func SetupRoutes(r *gin.Engine, db *gorm.DB, allowedOrigins string, jwtExpiry in
 	walletHandler := wallet.NewWalletHandler(walletService, auditService)
 	marketplaceHandler := marketplace.NewMarketplaceHandler(marketplaceService, auditService)
 	auditHandler := audit.NewAuditHandler(auditService)
-	missionHandler := mission.NewMissionHandler(missionService, auditService)
+	missionHandler := mission.NewMissionHandler(missionService, auditService, uploadPath)
 	transferHandler := transfer.NewHandler(transferService, auditService)
 
 	// ========================================

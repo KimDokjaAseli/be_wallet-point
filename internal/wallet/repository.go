@@ -87,7 +87,7 @@ func (r *WalletRepository) GetTransactions(params TransactionListParams) ([]Tran
 	var total int64
 
 	query := r.db.Table("wallet_transactions").
-		Select("wallet_transactions.*, users.email as user_email, users.full_name as user_name, users.nim_nip").
+		Select("wallet_transactions.*, wallets.user_id, users.email as user_email, users.full_name as user_name, users.nim_nip").
 		Joins("INNER JOIN wallets ON wallet_transactions.wallet_id = wallets.id").
 		Joins("INNER JOIN users ON wallets.user_id = users.id")
 

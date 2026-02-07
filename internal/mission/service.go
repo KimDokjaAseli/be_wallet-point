@@ -27,13 +27,14 @@ func NewMissionService(repo *MissionRepository, walletService *wallet.WalletServ
 // Mission Management
 func (s *MissionService) CreateMission(req *CreateMissionRequest, creatorID uint) (*Mission, error) {
 	mission := &Mission{
-		Title:       req.Title,
-		Description: req.Description,
-		Type:        req.Type,
-		Points:      req.Points,
-		Deadline:    req.Deadline,
-		Status:      "active",
-		CreatorID:   creatorID,
+		Title:        req.Title,
+		Description:  req.Description,
+		Type:         req.Type,
+		Points:       req.Points,
+		MinimumScore: req.MinimumScore,
+		Deadline:     req.Deadline,
+		Status:       "active",
+		CreatorID:    creatorID,
 	}
 
 	if req.Type == "quiz" && len(req.Questions) > 0 {
@@ -103,6 +104,9 @@ func (s *MissionService) UpdateMission(id uint, req *UpdateMissionRequest) (*Mis
 	}
 	if req.Status != "" {
 		updates["status"] = req.Status
+	}
+	if req.MinimumScore >= 0 {
+		updates["minimum_score"] = req.MinimumScore
 	}
 
 	if len(updates) > 0 {
@@ -228,10 +232,14 @@ func (s *MissionService) SubmitMission(req *SubmitMissionRequest, studentID uint
 				return err
 			}
 
-			// Reward points based on score
-			// Default conversion: pro-rated points
-			// If score is 80 and mission.Points is 100, student gets 80 points.
-			pointsReward := int(float64(score) / 100.0 * float64(mission.Points))
+			// 1. Reward points based on score and passing grade
+			// Only reward if score >= mission.MinimumScore
+			pointsReward := 0
+			if score >= mission.MinimumScore {
+				// Default conversion: pro-rated points
+				// If score is 80 and mission.Points is 100, student gets 80 points.
+				pointsReward = int(float64(score) / 100.0 * float64(mission.Points))
+			}
 
 			if pointsReward > 0 {
 				desc := fmt.Sprintf("Kuis: %s (Skor: %d)", mission.Title, score)

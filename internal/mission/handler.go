@@ -16,10 +16,11 @@ import (
 type MissionHandler struct {
 	service      *MissionService
 	auditService *audit.AuditService
+	uploadPath   string
 }
 
-func NewMissionHandler(service *MissionService, auditService *audit.AuditService) *MissionHandler {
-	return &MissionHandler{service: service, auditService: auditService}
+func NewMissionHandler(service *MissionService, auditService *audit.AuditService, uploadPath string) *MissionHandler {
+	return &MissionHandler{service: service, auditService: auditService, uploadPath: uploadPath}
 }
 
 // ========================================
@@ -64,6 +65,23 @@ func (h *MissionHandler) GetAllMissions(c *gin.Context) {
 		return
 	}
 
+	// Dynamic expiry check and security filtering
+	now := time.Now()
+	for i := range response.Missions {
+		m := &response.Missions[i]
+		// 1. Dynamic Expiry Check
+		if m.Deadline != nil && m.Deadline.Before(now) && m.Status == "active" {
+			m.Status = "expired"
+		}
+
+		// 2. Hide Answers for Students
+		if userRole == "mahasiswa" {
+			for j := range m.Questions {
+				m.Questions[j].Answer = "" // Clear correct answer
+			}
+		}
+	}
+
 	utils.SuccessResponse(c, http.StatusOK, "Missions retrieved successfully", response)
 }
 
@@ -87,6 +105,19 @@ func (h *MissionHandler) GetMissionByID(c *gin.Context) {
 	if err != nil {
 		utils.ErrorResponse(c, http.StatusNotFound, err.Error(), nil)
 		return
+	}
+
+	// Dynamic Expiry Check
+	if mission.Deadline != nil && mission.Deadline.Before(time.Now()) && mission.Status == "active" {
+		mission.Status = "expired"
+	}
+
+	// Security: Hide answers for students
+	userRole := c.GetString("role")
+	if userRole == "mahasiswa" {
+		for i := range mission.Questions {
+			mission.Questions[i].Answer = ""
+		}
 	}
 
 	utils.SuccessResponse(c, http.StatusOK, "Mission retrieved successfully", mission)
@@ -269,18 +300,18 @@ func (h *MissionHandler) SubmitMission(c *gin.Context) {
 		defer file.Close()
 
 		// Create upload dir if not exists
-		uploadDir := "./public/uploads/submissions"
-		if err := os.MkdirAll(uploadDir, 0755); err != nil {
+		submissionDir := filepath.Join(h.uploadPath, "submissions")
+		if err := os.MkdirAll(submissionDir, 0755); err != nil {
 			utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to create upload directory", err.Error())
 			return
 		}
 
 		// Generate filename: UNIX_USERID_FILENAME
 		filename := fmt.Sprintf("%d_%d_%s", time.Now().Unix(), studentID, filepath.Base(header.Filename))
-		filepath := filepath.Join(uploadDir, filename)
+		targetFilepath := filepath.Join(submissionDir, filename)
 
 		// Save file
-		out, err := os.Create(filepath)
+		out, err := os.Create(targetFilepath)
 		if err != nil {
 			utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to save file", err.Error())
 			return
