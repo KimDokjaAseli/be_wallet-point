@@ -4,350 +4,418 @@ package docs
 import "github.com/swaggo/swag"
 
 const docTemplate = `{
-  "swagger": "2.0",
-  "info": {
-    "description": "Platform Wallet Point Gamifikasi Kampus - Backend API",
-    "version": "1.0",
-    "title": "Wallet Point API",
-    "contact": {
-      "name": "API Support",
-      "email": "support@campus.edu"
-    }
-  },
-  "host": "{{.Host}}",
-  "basePath": "{{.BasePath}}",
-  "schemes": {{ marshal .Schemes }},
-  "securityDefinitions": {
-    "BearerAuth": {
-      "type": "apiKey",
-      "name": "Authorization",
-      "in": "header",
-      "description": "Enter your bearer token in the format: Bearer <token>"
-    }
-  },
-  "paths": {
-    "/auth/login": {
-      "post": {
-        "tags": ["Authentication"],
-        "summary": "User Login",
-        "description": "Authenticate user with email and password to receive a JWT token.",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "properties": {
-                "email": { "type": "string", "example": "mahasiswa@campus.edu" },
-                "password": { "type": "string", "example": "mahasiswa123" }
-              }
+    "schemes": {{ marshal .Schemes }},
+    "swagger": "2.0",
+    "info": {
+        "description": "{{escape .Description}}",
+        "title": "{{.Title}}",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "name": "API Support",
+            "email": "support@campus.edu"
+        },
+        "license": {
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+        },
+        "version": "{{.Version}}"
+    },
+    "host": "{{.Host}}",
+    "basePath": "{{.BasePath}}",
+    "paths": {
+        "/admin/users": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new user account (Admin only)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Admin register new user",
+                "parameters": [
+                    {
+                        "description": "User details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/auth.RegisterRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/auth.User"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
             }
-          }
-        ],
-        "responses": {
-          "200": { "description": "Login successful" },
-          "401": { "description": "Unauthorized" }
+        },
+        "/auth/login": {
+            "post": {
+                "description": "Authenticate user and return JWT token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "User login",
+                "parameters": [
+                    {
+                        "description": "Login credentials",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/auth.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/auth.LoginResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/me": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get authenticated user profile",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Get current user",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/auth.User"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/register": {
+            "post": {
+                "description": "Create a new mahasiswa account (Public)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Self registration",
+                "parameters": [
+                    {
+                        "description": "User details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/auth.PublicRegisterRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/auth.User"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
         }
-      }
     },
-    "/auth/register": {
-      "post": {
-        "tags": ["Authentication"],
-        "summary": "Register Mahasiswa",
-        "description": "Public registration for new students.",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "properties": {
-                "full_name": { "type": "string", "example": "John Doe" },
-                "email": { "type": "string", "example": "john@campus.edu" },
-                "password": { "type": "string", "example": "password123" },
-                "nim_nip": { "type": "string", "example": "12345678" }
-              }
+    "definitions": {
+        "auth.LoginRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 6
+                }
             }
-          }
-        ],
-        "responses": {
-          "201": { "description": "Created" }
+        },
+        "auth.LoginResponse": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/auth.UserSummary"
+                }
+            }
+        },
+        "auth.PublicRegisterRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "full_name",
+                "nim_nip",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "nim_nip": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 6
+                }
+            }
+        },
+        "auth.RegisterRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "full_name",
+                "nim_nip",
+                "password",
+                "role"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "nim_nip": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 6
+                },
+                "role": {
+                    "type": "string",
+                    "enum": [
+                        "admin",
+                        "dosen",
+                        "mahasiswa"
+                    ]
+                }
+            }
+        },
+        "auth.User": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "nim_nip": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "auth.UserSummary": {
+            "type": "object",
+            "properties": {
+                "balance": {
+                    "type": "integer"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "nim_nip": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "utils.Response": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "errors": {},
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
         }
-      }
     },
-    "/auth/me": {
-      "get": {
-        "security": [{"BearerAuth": []}],
-        "tags": ["Authentication"],
-        "summary": "Get Current User Profile",
-        "responses": {
-          "200": { "description": "Success" }
+    "securityDefinitions": {
+        "BearerAuth": {
+            "description": "Type \"Bearer\" followed by a space and JWT token.",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
-      }
-    },
-    "/auth/profile": {
-      "put": {
-        "security": [{"BearerAuth": []}],
-        "tags": ["Authentication"],
-        "summary": "Update Profile",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "properties": {
-                "full_name": { "type": "string" },
-                "email": { "type": "string" }
-              }
-            }
-          }
-        ],
-        "responses": { "200": { "description": "Updated" } }
-      }
-    },
-    "/auth/password": {
-      "put": {
-        "security": [{"BearerAuth": []}],
-        "tags": ["Authentication"],
-        "summary": "Change Password",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "properties": {
-                "old_password": { "type": "string" },
-                "new_password": { "type": "string" }
-              }
-            }
-          }
-        ],
-        "responses": { "200": { "description": "Password updated" } }
-      }
-    },
-    "/mahasiswa/wallet": {
-      "get": {
-        "security": [{"BearerAuth": []}],
-        "tags": ["Mahasiswa - Wallet"],
-        "summary": "Get My Wallet Balance",
-        "responses": { "200": { "description": "Success" } }
-      }
-    },
-    "/mahasiswa/transactions": {
-      "get": {
-        "security": [{"BearerAuth": []}],
-        "tags": ["Mahasiswa - Wallet"],
-        "summary": "Get My Transaction History",
-        "parameters": [
-          { "name": "page", "in": "query", "type": "integer", "default": 1 },
-          { "name": "limit", "in": "query", "type": "integer", "default": 20 }
-        ],
-        "responses": { "200": { "description": "Success" } }
-      }
-    },
-    "/mahasiswa/missions": {
-      "get": {
-        "security": [{"BearerAuth": []}],
-        "tags": ["Mahasiswa - Missions"],
-        "summary": "Get Active Missions",
-        "responses": { "200": { "description": "Success" } }
-      }
-    },
-    "/mahasiswa/missions/submit": {
-      "post": {
-        "security": [{"BearerAuth": []}],
-        "tags": ["Mahasiswa - Missions"],
-        "summary": "Submit Mission",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "properties": {
-                "mission_id": { "type": "integer" },
-                "content": { "type": "string" },
-                "file_url": { "type": "string" }
-              }
-            }
-          }
-        ],
-        "responses": { "200": { "description": "Submitted" } }
-      }
-    },
-    "/mahasiswa/transfer": {
-      "post": {
-        "security": [{"BearerAuth": []}],
-        "tags": ["Mahasiswa - Transfer"],
-        "summary": "Transfer Points",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "properties": {
-                "recipient_id": { "type": "integer" },
-                "amount": { "type": "number" },
-                "pin": { "type": "string" },
-                "description": { "type": "string" }
-              }
-            }
-          }
-        ],
-        "responses": { "200": { "description": "Transfer successful" } }
-      }
-    },
-    "/mahasiswa/marketplace/products": {
-      "get": {
-        "security": [{"BearerAuth": []}],
-        "tags": ["Mahasiswa - Marketplace"],
-        "summary": "Browse Products",
-        "responses": { "200": { "description": "Success" } }
-      }
-    },
-    "/mahasiswa/marketplace/purchase": {
-      "post": {
-        "security": [{"BearerAuth": []}],
-        "tags": ["Mahasiswa - Marketplace"],
-        "summary": "Purchase Product",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "properties": {
-                "product_id": { "type": "integer" },
-                "quantity": { "type": "integer" },
-                "pin": { "type": "string" }
-              }
-            }
-          }
-        ],
-        "responses": { "200": { "description": "Purchase successful" } }
-      }
-    },
-    "/admin/users": {
-      "get": {
-        "security": [{"BearerAuth": []}],
-        "tags": ["Admin - Users"],
-        "summary": "Get All Users",
-        "responses": { "200": { "description": "Success" } }
-      },
-      "post": {
-        "security": [{"BearerAuth": []}],
-        "tags": ["Admin - Users"],
-        "summary": "Create User",
-         "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "properties": {
-                "full_name": { "type": "string" },
-                "email": { "type": "string" },
-                "password": { "type": "string" },
-                "role": { "type": "string", "enum": ["admin", "dosen", "mahasiswa"] },
-                "nim_nip": { "type": "string" }
-              }
-            }
-          }
-        ],
-        "responses": { "201": { "description": "User Created" } }
-      }
-    },
-    "/admin/wallets": {
-      "get": {
-        "security": [{"BearerAuth": []}],
-        "tags": ["Admin - Wallets"],
-        "summary": "Get All Wallets",
-        "responses": { "200": { "description": "Success" } }
-      }
-    },
-    "/admin/wallet/adjustment": {
-      "post": {
-        "security": [{"BearerAuth": []}],
-        "tags": ["Admin - Wallets"],
-        "summary": "Adjust User Balance",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "properties": {
-                "user_id": { "type": "integer" },
-                "amount": { "type": "number" },
-                "type": { "type": "string", "enum": ["credit", "debit", "adjustment"] },
-                "description": { "type": "string" }
-              }
-            }
-          }
-        ],
-        "responses": { "200": { "description": "Adjustment successful" } }
-      }
-    },
-    "/dosen/missions": {
-      "post": {
-        "security": [{"BearerAuth": []}],
-        "tags": ["Dosen - Missions"],
-        "summary": "Create Mission",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "properties": {
-                "title": { "type": "string" },
-                "description": { "type": "string" },
-                "type": { "type": "string", "enum": ["quiz", "task", "assignment"] },
-                "points_reward": { "type": "number" },
-                "deadline": { "type": "string", "format": "date-time" }
-              }
-            }
-          }
-        ],
-        "responses": { "201": { "description": "Mission created" } }
-      },
-      "get": {
-        "security": [{"BearerAuth": []}],
-        "tags": ["Dosen - Missions"],
-        "summary": "Get My Missions",
-        "responses": { "200": { "description": "Success" } }
-      }
-    },
-    "/dosen/submissions": {
-       "get": {
-        "security": [{"BearerAuth": []}],
-        "tags": ["Dosen - Submissions"],
-        "summary": "Get Student Submissions",
-        "responses": { "200": { "description": "Success" } }
-      }
     }
-  }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "walletpoint.xeroon.my.id",
+	Host:             "bewallet-point-production.up.railway.app",
 	BasePath:         "/api/v1",
-	Schemes:          []string{"http"},
+	Schemes:          []string{"https"},
 	Title:            "Wallet Point API",
 	Description:      "Platform Wallet Point Gamifikasi Kampus - Backend API",
 	InfoInstanceName: "swagger",

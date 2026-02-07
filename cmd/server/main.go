@@ -21,7 +21,7 @@ import (
 // @license.name MIT
 // @license.url https://opensource.org/licenses/MIT
 
-// @host walletpoint.xeroon.my.id
+// @host bewallet-point-production.up.railway.app
 // @schemes https
 // @BasePath /api/v1
 

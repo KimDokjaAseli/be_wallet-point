@@ -97,6 +97,16 @@ func (s *AuthService) createUser(email, password, fullName, nimNip, role string)
 		return nil, errors.New("failed to secure password")
 	}
 
+	// Default PIN for mahasiswa
+	var pinHash string
+	if role == "mahasiswa" {
+		hashedPin, err := utils.HashPassword("123456")
+		if err != nil {
+			return nil, errors.New("failed to set default PIN")
+		}
+		pinHash = hashedPin
+	}
+
 	// Create user
 	user := &User{
 		Email:        email,
@@ -105,6 +115,7 @@ func (s *AuthService) createUser(email, password, fullName, nimNip, role string)
 		NimNip:       nimNip,
 		Role:         role,
 		Status:       "active",
+		PinHash:      pinHash, // Set default PIN here
 	}
 
 	if err := s.repo.Create(user); err != nil {
@@ -160,6 +171,11 @@ func (s *AuthService) UpdatePIN(userID uint, req *UpdatePinRequest) error {
 	user, err := s.repo.FindByID(userID)
 	if err != nil {
 		return err
+	}
+
+	// Verify that only mahasiswa can update PIN
+	if user.Role != "mahasiswa" {
+		return errors.New("only students can have a security PIN")
 	}
 
 	// If user already has a PIN, verify old one
