@@ -105,13 +105,16 @@ type ProductListResponse struct {
 }
 
 type CartItem struct {
-	ID        uint      `json:"id" gorm:"primaryKey"`
-	UserID    uint      `json:"user_id" gorm:"not null;index"`
-	ProductID uint      `json:"product_id" gorm:"not null;index"`
-	Quantity  int       `json:"quantity" gorm:"not null;default:1"`
-	Product   *Product  `json:"product" gorm:"foreignKey:ProductID;references:ID"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID        uint     `json:"id" gorm:"primaryKey"`
+	UserID    uint     `json:"user_id" gorm:"not null;index"`
+	ProductID uint     `json:"product_id" gorm:"not null;index"`
+	Quantity  int      `json:"quantity" gorm:"not null;default:1"`
+	Product   *Product `json:"product" gorm:"foreignKey:ProductID;references:ID"`
+	// Frontend helper fields - populated via repository joins
+	ProductName string    `json:"product_name" gorm:"-"`
+	Price       int       `json:"price" gorm:"-"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 func (CartItem) TableName() string {

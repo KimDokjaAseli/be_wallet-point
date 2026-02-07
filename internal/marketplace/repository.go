@@ -92,10 +92,12 @@ func (r *MarketplaceRepository) AddToCart(item *CartItem) error {
 
 func (r *MarketplaceRepository) GetCart(userID uint) ([]CartItem, error) {
 	var items []CartItem
-	// Explicitly select from cart_items to avoid any schema confusion
+	// Explicitly select and join to populate flat fields for frontend (product_name, price)
 	err := r.db.Table("cart_items").
+		Select("cart_items.*, products.name as product_name, products.price").
+		Joins("LEFT JOIN products ON products.id = cart_items.product_id").
 		Preload("Product").
-		Where("user_id = ?", userID).
+		Where("cart_items.user_id = ?", userID).
 		Find(&items).Error
 	if items == nil {
 		items = []CartItem{}
