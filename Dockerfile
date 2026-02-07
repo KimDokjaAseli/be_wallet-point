@@ -24,16 +24,19 @@ FROM alpine:latest
 
 WORKDIR /app
 
-# Install ca-certificates for generic HTTPS requests
+# Install ca-certificates and timezone data
 RUN apk --no-cache add ca-certificates tzdata
+
+# Set timezone (optional, can be overridden)
+ENV TZ=Asia/Jakarta
 
 # Copy the binary from builder
 COPY --from=builder /app/server .
 
-# Create uploads directory (since it is used in config)
+# Create uploads directory
 RUN mkdir -p uploads
 
-# Expose the port (Note: Railway ignores this, but good for documentation)
+# Expose the port
 EXPOSE 8080
 
 # Command to run the executable
