@@ -30,6 +30,15 @@ func SetupRoutes(r *gin.Engine, db *gorm.DB, allowedOrigins string, jwtExpiry in
 
 	r.Static("/uploads", "../../public/uploads")
 
+	// Root Route
+	r.GET("/", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "Welcome to Wallet Point API",
+			"docs":    "/swagger/index.html",
+			"health":  "/api/v1/health",
+		})
+	})
+
 	api := r.Group("/api/v1")
 
 	// Global Upload Endpoint
