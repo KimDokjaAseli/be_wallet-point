@@ -91,8 +91,15 @@ func (r *MarketplaceRepository) AddToCart(item *CartItem) error {
 }
 
 func (r *MarketplaceRepository) GetCart(userID uint) ([]CartItem, error) {
-	items := []CartItem{} // Initialize as empty slice, not nil
-	err := r.db.Model(&CartItem{}).Preload("Product").Where("user_id = ?", userID).Find(&items).Error
+	var items []CartItem
+	// Explicitly select from cart_items to avoid any schema confusion
+	err := r.db.Table("cart_items").
+		Preload("Product").
+		Where("user_id = ?", userID).
+		Find(&items).Error
+	if items == nil {
+		items = []CartItem{}
+	}
 	return items, err
 }
 

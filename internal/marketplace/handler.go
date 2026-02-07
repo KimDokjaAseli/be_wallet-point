@@ -287,10 +287,7 @@ func (h *MarketplaceHandler) GetCart(c *gin.Context) {
 		utils.ErrorResponse(c, http.StatusInternalServerError, err.Error(), nil)
 		return
 	}
-	utils.SuccessResponse(c, http.StatusOK, "Keranjang berhasil diambil", gin.H{
-		"items":       cartResponse.Items,
-		"total_price": cartResponse.TotalPrice,
-	})
+	utils.SuccessResponse(c, http.StatusOK, "Keranjang berhasil diambil", cartResponse)
 }
 
 func (h *MarketplaceHandler) AddToCart(c *gin.Context) {
