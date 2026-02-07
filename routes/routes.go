@@ -84,7 +84,6 @@ func SetupRoutes(r *gin.Engine, db *gorm.DB, allowedOrigins string, jwtExpiry in
 		authGroup.PUT("/password", middleware.AuthMiddleware(), authHandler.UpdatePassword)
 		authGroup.PUT("/pin", middleware.AuthMiddleware(), authHandler.UpdatePin)
 	}
-https://walletpoint.vercel.app/login.html
 	// ========================================
 	// ADMIN ROUTES
 	// ========================================

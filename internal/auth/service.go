@@ -204,7 +204,14 @@ func (s *AuthService) VerifyPIN(userID uint, pin string) error {
 		return err
 	}
 
+	// If PIN is not set, allow default PIN for mahasiswa
 	if user.PinHash == "" {
+		if user.Role == "mahasiswa" {
+			if pin == "123456" {
+				return nil
+			}
+			return errors.New("invalid PIN. Default PIN is 123456")
+		}
 		return errors.New("transaction PIN has not been set. Please set your PIN in Security settings first.")
 	}
 

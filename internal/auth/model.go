@@ -66,5 +66,5 @@ type UpdatePasswordRequest struct {
 
 type UpdatePinRequest struct {
 	OldPin string `json:"old_pin"`
-	NewPin string `json:"new_pin" binding:"required,len=6"`
+	NewPin string `json:"new_pin" binding:"required,min=4,max=6"`
 }
