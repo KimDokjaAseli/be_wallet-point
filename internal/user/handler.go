@@ -234,20 +234,35 @@ func (h *UserHandler) ChangePassword(c *gin.Context) {
 // @Failure 404 {object} utils.Response
 // @Router /mahasiswa/users/lookup [get]
 func (h *UserHandler) LookupUser(c *gin.Context) {
-	idStr := c.Query("id")
-	if idStr == "" {
-		utils.ErrorResponse(c, http.StatusBadRequest, "User ID is required", nil)
+	identifier := c.Query("id")
+	if identifier == "" {
+		utils.ErrorResponse(c, http.StatusBadRequest, "User ID or NIM is required", nil)
 		return
 	}
 
-	userID, err := strconv.ParseUint(idStr, 10, 32)
-	if err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid user ID", nil)
-		return
+	var user *User
+	var err error
+
+	// Try parsing as ID first
+	userID, parseErr := strconv.ParseUint(identifier, 10, 32)
+	if parseErr == nil {
+		userWithWallet, err := h.service.GetUserByID(uint(userID))
+		if err == nil {
+			// Create a temporary User object or just use the fields
+			user = &User{
+				ID:       userWithWallet.ID,
+				FullName: userWithWallet.FullName,
+				Role:     userWithWallet.Role,
+			}
+		}
 	}
 
-	user, err := h.service.GetUserByID(uint(userID))
-	if err != nil {
+	// If not found by ID, try NIM
+	if user == nil {
+		user, err = h.service.GetUserByNim(identifier)
+	}
+
+	if err != nil || user == nil {
 		utils.ErrorResponse(c, http.StatusNotFound, "User not found", nil)
 		return
 	}

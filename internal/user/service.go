@@ -115,3 +115,8 @@ func (s *UserService) ChangeUserPassword(userID uint, newPassword string) error 
 
 	return s.repo.UpdatePassword(userID, hashedPassword)
 }
+
+// GetUserByNim gets user by NIM/NIP
+func (s *UserService) GetUserByNim(nim string) (*User, error) {
+	return s.repo.FindByNim(nim)
+}

@@ -103,3 +103,17 @@ func (r *UserRepository) CheckEmailExists(email string, excludeUserID uint) (boo
 	err := query.Count(&count).Error
 	return count > 0, err
 }
+
+// FindByNim finds user by NIM/NIP
+func (r *UserRepository) FindByNim(nim string) (*User, error) {
+	var user User
+	err := r.db.Where("nim_nip = ?", nim).First(&user).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("user not found")
+		}
+		return nil, err
+	}
+	return &user, nil
+}
+
