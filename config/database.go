@@ -1,6 +1,7 @@
 package config
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"time"
@@ -28,10 +29,32 @@ func ConnectDB(cfg *Config) *gorm.DB {
 		},
 	}
 
-	// Connect to database
-	db, err := gorm.Open(mysql.Open(dsn), gormConfig)
+	// Retry loop for database connection
+	var db *gorm.DB
+	var err error
+	maxRetries := 15
+
+	for i := 1; i <= maxRetries; i++ {
+		db, err = gorm.Open(mysql.Open(dsn), gormConfig)
+		if err == nil {
+			var sqlDB *sql.DB // We need database/sql imported, wait, let's just use db.DB()
+			sqlDB, err = db.DB()
+			if err == nil {
+				err = sqlDB.Ping()
+				if err == nil {
+					break // Connection successful
+				}
+			}
+		}
+
+		log.Printf("⏳ Database connection attempt %d/%d failed: %v. Retrying in 5s...", i, maxRetries, err)
+		if i < maxRetries {
+			time.Sleep(5 * time.Second)
+		}
+	}
+
 	if err != nil {
-		log.Fatal("Failed to connect to database:", err)
+		log.Fatal("❌ Failed to connect to database after retries:", err)
 	}
 
 	// Get underlying SQL DB for connection pool configuration
@@ -41,14 +64,9 @@ func ConnectDB(cfg *Config) *gorm.DB {
 	}
 
 	// Connection pool settings
-	sqlDB.SetMaxIdleConns(10)           // Maximum idle connections
-	sqlDB.SetMaxOpenConns(100)          // Maximum open connections
-	sqlDB.SetConnMaxLifetime(time.Hour) // Connection lifetime
-
-	// Test connection
-	if err := sqlDB.Ping(); err != nil {
-		log.Fatal("Failed to ping database:", err)
-	}
+	sqlDB.SetMaxIdleConns(10)                  // Maximum idle connections
+	sqlDB.SetMaxOpenConns(100)                 // Maximum open connections
+	sqlDB.SetConnMaxLifetime(5 * time.Minute)  // Connection lifetime (shortened to prevent proxy drop EOF)
 
 	log.Println("✅ Database connected successfully")
 	return db
